@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ne">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pretest Result Checker</title>
+    <title>लोक सेवा आयोग - प्रिटेष्ट नतिजा</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -11,8 +11,9 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
+            padding: 20px;
         }
         .container {
             background: white;
@@ -20,90 +21,94 @@
             border-radius: 10px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             text-align: center;
-            width: 90%;
-            max-width: 400px;
+            width: 100%;
+            max-width: 450px;
         }
-        h2 { color: #333; margin-bottom: 20px; }
+        h2 { color: #d63031; margin: 5px 0; }
+        h3 { color: #0984e3; margin: 5px 0 20px 0; font-size: 16px; }
         input[type="text"] {
             width: 100%;
             padding: 12px;
             margin: 15px 0;
-            border: 1px solid #ccc;
+            border: 2px solid #b2bec3;
             border-radius: 5px;
             box-sizing: border-box;
             font-size: 16px;
+            text-align: center;
         }
         button {
-            background-color: #2ecc71;
+            background-color: #0984e3;
             color: white;
             border: none;
-            padding: 12px 20px;
+            padding: 14px 20px;
             font-size: 16px;
             cursor: pointer;
             border-radius: 5px;
             width: 100%;
-            transition: 0.3s;
+            font-weight: bold;
         }
-        button:hover { background-color: #27ae60; }
+        button:hover { background-color: #074b83; }
         #resultDisplay {
             margin-top: 25px;
             padding: 15px;
             border-radius: 5px;
-            font-weight: bold;
             display: none;
+            font-weight: bold;
+            line-height: 1.6;
         }
         .pass { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .fail { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
         .notfound { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Pretest Result</h2>
-    <p>Please enter your Roll Number below:</p>
-    <input type="text" id="rollNumberInput" placeholder="e.g. 101">
-    <button onclick="checkResult()">Check Result</button>
+    <h2>लोक सेवा आयोग</h2>
+    <h3>लिखित परीक्षा नतिजा प्रकाशन (पूर्व-योग्यता)</h3>
+    <p>जम्मा छनौट संख्या: <strong>१८,२१६ जना</strong></p>
+    
+    <p>कृपया आफ्नो रोल नम्बर (Roll Number) राख्नुहोस्:</p>
+    <input type="text" id="rollNumberInput" placeholder="जस्तै: 10003 वा 50426">
+    <button onclick="checkResult()">नतिजा हेर्नुहोस्</button>
     
     <div id="resultDisplay"></div>
 </div>
 
 <script>
-    const resultData = {
-        "101": { name: "Ram Thapa", status: "PASSED", marks: 78 },
-        "102": { name: "Sita Shrestha", status: "PASSED", marks: 85 },
-        "103": { name: "Hari Sharma", status: "FAILED", marks: 32 },
-        "104": { name: "Gita Rai", status: "PASSED", marks: 60 }
-    };
-
     function checkResult() {
         const rollInput = document.getElementById("rollNumberInput").value.trim();
         const display = document.getElementById("resultDisplay");
         
         display.style.display = "block";
+        const roll = parseInt(rollInput, 10);
         
-        if (rollInput === "") {
+        if (rollInput === "" || isNaN(roll)) {
             display.className = "notfound";
-            display.innerHTML = "Please enter a roll number.";
+            display.innerHTML = "कृपया मान्य रोल नम्बर राख्नुहोस्।";
             return;
         }
         
-        if (resultData[rollInput]) {
-            const student = resultData[rollInput];
-            if (student.status === "PASSED") {
-                display.className = "pass";
-                display.innerHTML = `🎉 Congratulations ${student.name}!<br>Status: ${student.status}<br>Marks: ${student.marks}`;
-            } else {
-                display.className = "fail";
-                display.innerHTML = `😞 Sorry ${student.name}.<br>Status: ${student.status}<br>Marks: ${student.marks}`;
-            }
+        // लोकसेवाको सूचीमा भएका रोल नम्बर रेन्ज (Range Check Logic)
+        const isPassed = (
+            (roll >= 10003 && roll <= 11938) || 
+            (roll >= 50003 && roll <= 53312)
+        );
+        
+        if (isPassed) {
+            display.className = "pass";
+            display.innerHTML = `
+                🎉 बधाई छ! रोल नम्बर ${rollInput} उत्तीर्ण सूचीमा समावेश छ।<br>
+                <span style="color:#2ecc71;">Status: SELECTED FOR SECOND STAGE</span><br><br>
+                <small style="font-weight:normal; color:#555;">
+                आफ्नो नाम र थप विवरण रुजु गर्न आधिकारिक पीडीएफको पाना जाँच गर्नुहोला।
+                </small>
+            `;
         } else {
             display.className = "notfound";
-            display.innerHTML = "Roll number not found. Please try again.";
+            display.innerHTML = "खोजिएको रोल नम्बर उत्तीर्ण भएका १८,२१६ जनाको सूचीमा भेटिएन।";
         }
     }
 </script>
 
 </body>
 </html>
-
