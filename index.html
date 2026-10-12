@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>लोक सेवा आयोग - प्रिटेष्ट नतिजा</title>
+    <title>लोक सेवा आयोग - तहगत प्रिटेष्ट नतिजा</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -14,6 +14,7 @@
             min-height: 100vh;
             margin: 0;
             padding: 20px;
+            box-sizing: border-box;
         }
         .container {
             background: white;
@@ -22,90 +23,145 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             text-align: center;
             width: 100%;
-            max-width: 450px;
+            max-width: 480px;
         }
-        h2 { color: #d63031; margin: 5px 0; }
+        h2 { color: #d63031; margin: 5px 0; font-size: 24px; }
         h3 { color: #0984e3; margin: 5px 0 20px 0; font-size: 16px; }
-        input[type="text"] {
+        select, input[type="text"] {
             width: 100%;
             padding: 12px;
-            margin: 15px 0;
+            margin: 10px 0;
             border: 2px solid #b2bec3;
             border-radius: 5px;
             box-sizing: border-box;
             font-size: 16px;
+            font-weight: bold;
             text-align: center;
         }
+        select { text-align-last: center; background-color: #fff; }
         button {
             background-color: #0984e3;
             color: white;
             border: none;
             padding: 14px 20px;
             font-size: 16px;
+            font-weight: bold;
             cursor: pointer;
             border-radius: 5px;
             width: 100%;
-            font-weight: bold;
+            margin-top: 10px;
         }
         button:hover { background-color: #074b83; }
         #resultDisplay {
             margin-top: 25px;
             padding: 15px;
             border-radius: 5px;
+            text-align: left;
             display: none;
-            font-weight: bold;
+            font-size: 15px;
             line-height: 1.6;
         }
         .pass { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .notfound { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        .notfound { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; text-align: center; }
+        .status-badge {
+            background: #2ecc71;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-block;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h2>लोक सेवा आयोग</h2>
-    <h3>लिखित परीक्षा नतिजा प्रकाशन (पूर्व-योग्यता)</h3>
-    <p>जम्मा छनौट संख्या: <strong>१८,२१६ जना</strong></p>
+    <h3>लिखित परीक्षा नतिजा प्रकाशन शाखा</h3>
     
-    <p>कृपया आफ्नो रोल नम्बर (Roll Number) राख्नुहोस्:</p>
-    <input type="text" id="rollNumberInput" placeholder="जस्तै: 10003 वा 50426">
+    <div style="margin-bottom: 15px; text-align: left;">
+        <label for="levelSelect" style="font-weight: bold; color: #333;">परीक्षा तह रोज्नुहोस् (Select Level):</label>
+    </div>
+    <select id="levelSelect">
+        <option value="5">पाँचौँ तह (5th Level)</option>
+        <option value="4">चौथो तह (4th Level)</option>
+    </select>
+
+    <p>कृपया आफ्नो रोल नम्बर राखेर नतिजा खोज्नुहोस्:</p>
+    <input type="text" id="rollNumberInput" placeholder="उदाहरण: 10003, 20001">
     <button onclick="checkResult()">नतिजा हेर्नुहोस्</button>
     
     <div id="resultDisplay"></div>
 </div>
 
 <script>
+    // पाँचौँ तहको डाटाबेस
+    const level5Data = {
+        "10003": { name: "जीना लिम्बु", father: "Dal Bahadur Limbu", gfather: "Nar Bahadur Limbu" },
+        "10020": { name: "जिवन आचार्य", father: "प्रेम चन्द्र आचार्य", gfather: "गङ्गा प्रसाद आचार्य" },
+        "50426": { name: "एलिशा कार्की", father: "पुष्प बहादुर कार्की", gfather: "सुर्य बहादुर कार्की" }
+    };
+
+    // चौथो तहको डाटाबेस
+    const level4Data = {
+        "20001": { name: "राम बहादुर श्रेष्ठ", father: "हरि श्रेष्ठ", gfather: "कृष्ण श्रेष्ठ" },
+        "20045": { name: "सिर्जना थापा", father: "श्याम थापा", gfather: "गणेश थापा" }
+    };
+
     function checkResult() {
+        const selectedLevel = document.getElementById("levelSelect").value;
         const rollInput = document.getElementById("rollNumberInput").value.trim();
         const display = document.getElementById("resultDisplay");
         
         display.style.display = "block";
-        const roll = parseInt(rollInput, 10);
         
-        if (rollInput === "" || isNaN(roll)) {
+        if (rollInput === "") {
             display.className = "notfound";
-            display.innerHTML = "कृपया मान्य रोल नम्बर राख्नुहोस्।";
+            display.innerHTML = "कृपया रोल नम्बर राख्नुहोस्।";
             return;
         }
-        
-        // लोकसेवाको सूचीमा भएका रोल नम्बर रेन्ज (Range Check Logic)
-        const isPassed = (
-            (roll >= 10003 && roll <= 11938) || 
-            (roll >= 50003 && roll <= 53312)
-        );
-        
-        if (isPassed) {
+
+        let student = null;
+        let levelText = "";
+
+        if (selectedLevel === "5") {
+            student = level5Data[rollInput];
+            levelText = "पाँचौँ तह (5th Level)";
+        } else if (selectedLevel === "4") {
+            student = level4Data[rollInput];
+            levelText = "चौथो तह (4th Level)";
+        }
+
+        if (student) {
             display.className = "pass";
             display.innerHTML = `
-                🎉 बधाई छ! रोल नम्बर ${rollInput} उत्तीर्ण सूचीमा समावेश छ।<br>
-                <span style="color:#2ecc71;">Status: SELECTED FOR SECOND STAGE</span><br><br>
-                <small style="font-weight:normal; color:#555;">
-                आफ्नो नाम र थप विवरण रुजु गर्न आधिकारिक पीडीएफको पाना जाँच गर्नुहोला।
-                </small>
+                <div style="text-align:center; margin-bottom:10px;">
+                    <span class="status-badge">🎉 उत्तीर्ण हुनुभएको छ (SELECTED)</span>
+                </div>
+                <strong>परीक्षा तह:</strong> ${levelText}<br>
+                <strong>परीक्षार्थीको नाम:</strong> ${student.name}<br>
+                <strong>रोल नम्बर:</strong> ${rollInput}<br>
+                <strong>बाबुको नाम:</strong> ${student.father}<br>
+                <strong>बाजेको नाम:</strong> ${student.gfather}<br>
             `;
         } else {
-            display.className = "notfound";
-            display.innerHTML = "खोजिएको रोल नम्बर उत्तीर्ण भएका १८,२१६ जनाको सूचीमा भेटिएन।";
+            // पाँचौँ तहका लागि १८,२१६ जनाको ब्याकअप रेन्ज लजिक
+            const roll = parseInt(rollInput, 10);
+            if (selectedLevel === "5" && ((roll >= 10003 && roll <= 11938) || (roll >= 50003 && roll <= 53312))) {
+                display.className = "pass";
+                display.innerHTML = `
+                    <div style="text-align:center; margin-bottom:10px;">
+                        <span class="status-badge">🎉 उत्तीर्ण हुनुभएको छ (SELECTED)</span>
+                    </div>
+                    <strong>परीक्षा तह:</strong> ${levelText}<br>
+                    <strong>रोल नम्बर:</strong> ${rollInput}<br>
+                    <span style="color:#27ae60; font-weight:bold;">बधाई छ! तपाईं पाँचौँ तहको उत्तीर्ण सूचीमा पर्नुभएको छ।</span>
+                `;
+            } else {
+                display.className = "notfound";
+                display.innerHTML = `खोजिएको रोल नम्बर ${levelText} को सफल सूचीमा भेटिएन। कृपया तह र रोल नम्बर पुनः जाँच गर्नुहोला।`;
+            }
         }
     }
 </script>
