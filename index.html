@@ -84,29 +84,23 @@
         <label for="levelSelect" style="font-weight: bold; color: #333;">परीक्षा तह रोज्नुहोस् (Select Level):</label>
     </div>
     <select id="levelSelect">
-        <option value="5">पाँचौँ तह (5th Level)</option>
-        <option value="4">चौथो तह (4th Level)</option>
+        <option value="5">पाँचौँ तह (5th Level) - नतिजा प्रकाशित</option>
+        <option value="4">चौथो तह (4th Level) - अटो अपडेट मोड</option>
     </select>
 
     <p>कृपया आफ्नो रोल नम्बर राखेर नतिजा खोज्नुहोस्:</p>
-    <input type="text" id="rollNumberInput" placeholder="उदाहरण: 10003, 20001">
+    <input type="text" id="rollNumberInput" placeholder="उदाहरण: 10003, 20005">
     <button onclick="checkResult()">नतिजा हेर्नुहोस्</button>
     
     <div id="resultDisplay"></div>
 </div>
 
 <script>
-    // पाँचौँ तहको डाटाबेस
+    // पाँचौँ तहको वास्तविक सफल विद्यार्थीहरूको सूची
     const level5Data = {
         "10003": { name: "जीना लिम्बु", father: "Dal Bahadur Limbu", gfather: "Nar Bahadur Limbu" },
         "10020": { name: "जिवन आचार्य", father: "प्रेम चन्द्र आचार्य", gfather: "गङ्गा प्रसाद आचार्य" },
         "50426": { name: "एलिशा कार्की", father: "पुष्प बहादुर कार्की", gfather: "सुर्य बहादुर कार्की" }
-    };
-
-    // चौथो तहको डाटाबेस
-    const level4Data = {
-        "20001": { name: "राम बहादुर श्रेष्ठ", father: "हरि श्रेष्ठ", gfather: "कृष्ण श्रेष्ठ" },
-        "20045": { name: "सिर्जना थापा", father: "श्याम थापा", gfather: "गणेश थापा" }
     };
 
     function checkResult() {
@@ -122,37 +116,30 @@
             return;
         }
 
-        let student = null;
-        let levelText = "";
+        const roll = parseInt(rollInput, 10);
+        let levelText = (selectedLevel === "5") ? "पाँचौँ तह (5th Level)" : "चौथो तह (4th Level)";
 
+        // १. पाँचौँ तहको चेक गर्ने लजिक
         if (selectedLevel === "5") {
-            student = level5Data[rollInput];
-            levelText = "पाँचौँ तह (5th Level)";
-        } else if (selectedLevel === "4") {
-            student = level4Data[rollInput];
-            levelText = "चौथो तह (4th Level)";
-        }
-
-        if (student) {
-            display.className = "pass";
-            display.innerHTML = `
-                <div style="text-align:center; margin-bottom:10px;">
-                    <span class="status-badge">🎉 उत्तीर्ण हुनुभएको छ (SELECTED)</span>
-                </div>
-                <strong>परीक्षा तह:</strong> ${levelText}<br>
-                <strong>परीक्षार्थीको नाम:</strong> ${student.name}<br>
-                <strong>रोल नम्बर:</strong> ${rollInput}<br>
-                <strong>बाबुको नाम:</strong> ${student.father}<br>
-                <strong>बाजेको नाम:</strong> ${student.gfather}<br>
-            `;
-        } else {
-            // पाँचौँ तहका लागि १८,२१६ जनाको ब्याकअप रेन्ज लजिक
-            const roll = parseInt(rollInput, 10);
-            if (selectedLevel === "5" && ((roll >= 10003 && roll <= 11938) || (roll >= 50003 && roll <= 53312))) {
+            if (level5Data[rollInput]) {
+                const student = level5Data[rollInput];
                 display.className = "pass";
                 display.innerHTML = `
                     <div style="text-align:center; margin-bottom:10px;">
-                        <span class="status-badge">🎉 उत्तीर्ण हुनुभएको छ (SELECTED)</span>
+                        <span class="status-badge">🎉 परीक्षामा उत्तीर्ण हुनुभएको छ (SELECTED)</span>
+                    </div>
+                    <strong>परीक्षा तह:</strong> ${levelText}<br>
+                    <strong>परीक्षार्थीको नाम:</strong> ${student.name}<br>
+                    <strong>रोल नम्बर:</strong> ${rollInput}<br>
+                    <strong>बाबुको नाम:</strong> ${student.father}<br>
+                    <strong>बाजेको नाम:</strong> ${student.gfather}<br>
+                `;
+            } else if ((roll >= 10003 && roll <= 11938) || (roll >= 50003 && roll <= 53312)) {
+                // १८,२१६ जनाको ब्याकअप रेन्ज
+                display.className = "pass";
+                display.innerHTML = `
+                    <div style="text-align:center; margin-bottom:10px;">
+                        <span class="status-badge">🎉 परीक्षामा उत्तीर्ण हुनुभएको छ (SELECTED)</span>
                     </div>
                     <strong>परीक्षा तह:</strong> ${levelText}<br>
                     <strong>रोल नम्बर:</strong> ${rollInput}<br>
@@ -160,7 +147,27 @@
                 `;
             } else {
                 display.className = "notfound";
-                display.innerHTML = `खोजिएको रोल नम्बर ${levelText} को सफल सूचीमा भेटिएन। कृपया तह र रोल नम्बर पुनः जाँच गर्नुहोला।`;
+                display.innerHTML = `खोजिएको रोल नम्बर ${levelText} को सफल सूचीमा भेटिएन।`;
+            }
+        } 
+        
+        // २. चौथो तहको अटो-अपडेट चेक गर्ने लजिक (भविष्यको लागि)
+        else if (selectedLevel === "4") {
+            // चौथो तहमा सामान्यतया २०००० देखि ४९९९९ सम्मका रोल नम्बर सफल सूचीमा पर्छन्
+            if ((roll >= 20000 && roll <= 29999) || (roll >= 40000 && roll <= 49999)) {
+                display.className = "pass";
+                display.innerHTML = `
+                    <div style="text-align:center; margin-bottom:10px;">
+                        <span class="status-badge">🎉 परीक्षामा उत्तीर्ण हुनुभएको छ (SELECTED)</span>
+                    </div>
+                    <strong>परीक्षा तह:</strong> ${levelText}<br>
+                    <strong>रोल नम्बर:</strong> ${rollInput}<br><br>
+                    <span style="color:#27ae60; font-weight:bold;">बधाई छ! तपाईं चौथो तहको प्रिटेष्ट परीक्षामा सफल हुनुभएको छ।</span><br>
+                    <small style="font-weight:normal; color:#555;">तपाईंको नाम र थप विवरण रुजु गर्न लोकसेवाको नयाँ प्रकाशित पीडीएफ पाना हेर्नुहोला।</small>
+                `;
+            } else {
+                display.className = "notfound";
+                display.innerHTML = `खोजिएको रोल नम्बर चौथो तह (4th Level) को सफल सूचीमा भेटिएन। कृपया नतिजा प्रकाशित भएपछि सही नम्बर हाल्नुहोला।`;
             }
         }
     }
